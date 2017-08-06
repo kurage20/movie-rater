@@ -10,6 +10,7 @@ export default class App extends React.Component {
       modalVisible: false,
 
     }  
+    this.reRender = this.reRender.bind(this)
   }
 
   componentDidMount() {
@@ -49,12 +50,14 @@ export default class App extends React.Component {
    } 
  })
 
- let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+this.reRender(data)
+
+}
+reRender(data) {
+  let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
  this.setState({
   dataSource: ds.cloneWithRows(data)
 })
-
-
 }
 
 setModalVisible(visible) {
@@ -154,7 +157,7 @@ _sendData(movie) {
       dataSource={this.state.dataSource}
       renderRow={this.renderRow.bind(this)}
       renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}
-      renderHeader={() => <Header data = {this.state.data} dataSource = {this.state.dataSource} />}
+      renderHeader={() => <Header data = {this.state.data} dataSource = {this.state.dataSource} reRender = {this.reRender} />}
     />
 
     </View>
@@ -177,26 +180,21 @@ class Header extends React.Component {
     this.setState({ switchValue: value })
     let data = this.props.data
     let arr = []
-        if(this.state.switchValue) {
+    console.log(this.state.switchValue)
+    if(!this.state.switchValue) {
       Object.keys(data).forEach(function(movie) {
       arr.push(data[movie])
       
     })
     console.log(arr)
 
-    arr.sort(function(a,b) {
-      return a.popularity - b.popularity
-    })
-    data = arr
+    arr.sort(function(a,b) {return (a.popularity < b.popularity) ? 1 : ((b.popularity < a.popularity) ? -1 : 0);} ); 
+    this.props.data = arr
+    this.props.reRender(arr)
+    }
+  }
   
-     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
- this.setState({
-  dataSource: ds.cloneWithRows(data)
-})
-
-
-  }
-  }
+  
 
   render() {
     return(  <View style={styles.header}>
