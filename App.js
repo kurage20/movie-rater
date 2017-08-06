@@ -56,6 +56,7 @@ this.reRender(data)
 reRender(data) {
   let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
  this.setState({
+   data: data,
   dataSource: ds.cloneWithRows(data)
 })
 }
