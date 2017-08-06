@@ -11,6 +11,7 @@ export default class App extends React.Component {
 
     }  
     this.reRender = this.reRender.bind(this)
+    this.rateMovie = this.rateMovie.bind(this)
   }
 
   componentDidMount() {
@@ -42,13 +43,19 @@ export default class App extends React.Component {
     this.setState({data: data})
   }
 
-  rateMovie(id, upvote) { 
-   let data = this.state.data
+  rateMovie(id, upvote, modal) { 
+   var data = this.state.data
+
    Object.keys(data).forEach(function(key) {
     if(key === id) {
+      
      upvote ? data[key].popularity++ : data[key].popularity--
-   } 
+   }
  })
+  if(modal) {
+    upvote ? this.setState({popularity: ++this.state.popularity}) : this.setState({popularity: --this.state.popularity})
+  }
+ 
 
 this.reRender(data)
 
@@ -71,7 +78,7 @@ renderRow(movie, sectionId, rowId) {
   return (
   <View style={styles.container}> 
     <TouchableOpacity activeOpacity={0.7} onPress={() => {
-      this._sendData(movie)
+      this._sendData(movie, rowId)
     }}>
       <Image source={{uri: movie.cover }} style={styles.image} /> 
 
@@ -101,14 +108,16 @@ renderRow(movie, sectionId, rowId) {
 
   </View>)
 }
-_sendData(movie) {
+_sendData(movie, rowId) {
   this.setState({
     title: movie.title,
     year: movie.releaseYear, 
     day: movie.releaseDay, 
     month: movie.releaseMonth, 
     img: movie.cover,
-    imdbId: movie.imdbId})
+    imdbId: movie.imdbId,
+    popularity: movie.popularity,
+    rowId: rowId})
     this.setModalVisible(true)
   }
   _linkPressed(url) {
@@ -138,6 +147,26 @@ _sendData(movie) {
             <Image source={{uri: this.state.img}} style={{width:250, height:350}} />
             <Text style={{fontSize: 25, marginTop: 5}}>{this.state.title}</Text>
             <Text style={{fontSize: 15}}>Release date: {this.state.month}/{this.state.day}/{this.state.year}  </Text>
+
+                 <View style={{flexDirection: 'row', marginTop: 10}}>
+
+    <TouchableOpacity activeOpacity={0.6} onPress = {() => {this.rateMovie(this.state.rowId, true, true) }} style={styles.button}> 
+
+      <Image source={{uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Facebook_like_thumb.png/1196px-Facebook_like_thumb.png"}}
+             style={styles.button}/> 
+    </TouchableOpacity>
+
+    <TouchableHighlight > 
+      <Text style={styles.popularity}>{this.state.popularity}</Text>
+    </TouchableHighlight>
+
+    <TouchableOpacity onPress = {() => {this.rateMovie(this.state.rowId, false, true) }}>
+
+      <Image source={{uri:"https://qph.ec.quoracdn.net/main-qimg-fd1238ccb878077607a087fbeec0ed44"}} 
+             style={styles.button}/>
+    </TouchableOpacity>
+
+    </View>
             
             <TouchableOpacity onPress = {() => {this._linkPressed("http://www.imdb.com/title/" + this.state.imdbId)}} >
               <Image source={{uri: "http://ia.media-imdb.com/images/M/MV5BMTk3ODA4Mjc0NF5BMl5BcG5nXkFtZTgwNDc1MzQ2OTE@._V1_.png"}} 
@@ -181,22 +210,16 @@ class Header extends React.Component {
     this.setState({ switchValue: value })
     let data = this.props.data
     let arr = []
-    console.log(this.state.switchValue)
+
     if(!this.state.switchValue) {
       Object.keys(data).forEach(function(movie) {
       arr.push(data[movie])
-      
     })
-    console.log(arr)
 
     arr.sort(function(a,b) {return (a.popularity < b.popularity) ? 1 : ((b.popularity < a.popularity) ? -1 : 0);} ); 
-    this.props.data = arr
     this.props.reRender(arr)
     }
   }
-  
-  
-
   render() {
     return(  <View style={styles.header}>
       <Text> Sort by rating: </Text>
@@ -243,20 +266,13 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       height: 80
    },
-      header: {
-    flex: 1,
-    padding: 8,
-    alignItems: 'center',
-    borderWidth: 0.5,
-    borderColor: '#d8d8d8',
-    height: 100,
-    backgroundColor: "#e8e8e8"
-  },
-  input: {
-    height: 30,
-    flex: 1,
-    paddingHorizontal: 8,
-    fontSize: 15,
-    backgroundColor: '#FFFFFF'
+    header: {
+      flex: 1,
+      padding: 8,
+      alignItems: 'center',
+      borderWidth: 0.5,
+      borderColor: '#d8d8d8',
+      height: 100,
+      backgroundColor: "#e8e8e8"
   },
 })
