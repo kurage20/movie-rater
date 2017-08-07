@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   StyleSheet, Text, View, ListView, TouchableOpacity, Image, ActivityIndicator,
-  Modal, TouchableWithoutFeedback, TouchableHighlight, Linking, TextInput, Switch
+  Modal, TouchableHighlight, Linking, Switch
 } from 'react-native';
 
 export default class App extends React.Component {
@@ -51,12 +51,14 @@ export default class App extends React.Component {
 
     Object.keys(data).forEach(function (key) {
       if (key === id) {
-
+        if( (data[key].popularity >= 0 && upvote) || (data[key].popularity > 0 && !upvote) )
         upvote ? data[key].popularity++ : data[key].popularity--
       }
     })
     if (modal) {
+      if( (this.state.popularity >= 0 && upvote) || (this.state.popularity > 0 && !upvote) ) {
       upvote ? this.setState({ popularity: ++this.state.popularity }) : this.setState({ popularity: --this.state.popularity })
+      }
     }
 
 
