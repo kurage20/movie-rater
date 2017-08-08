@@ -1,8 +1,7 @@
 import React from 'react';
 import {
   StyleSheet, Text, View, ListView, TouchableOpacity, Image, ActivityIndicator,
-  Modal, TouchableHighlight, Linking, Switch
-} from 'react-native';
+  Modal, TouchableHighlight, Linking, Switch } from 'react-native';
 
 export default class App extends React.Component {
   constructor() {
@@ -47,7 +46,7 @@ export default class App extends React.Component {
   }
 
   rateMovie(id, upvote, modal) {
-    var data = this.state.data
+    let data = this.state.data
 
     Object.keys(data).forEach(function (key) {
       if (key === id) {
@@ -55,12 +54,12 @@ export default class App extends React.Component {
         upvote ? data[key].popularity++ : data[key].popularity--
       }
     })
+
     if (modal) {
       if( (this.state.popularity >= 0 && upvote) || (this.state.popularity > 0 && !upvote) ) {
       upvote ? this.setState({ popularity: ++this.state.popularity }) : this.setState({ popularity: --this.state.popularity })
       }
     }
-
 
     this.reRender(data)
 
@@ -75,11 +74,9 @@ export default class App extends React.Component {
 
   setModalVisible(visible) {
     this.setState({ modalVisible: visible });
-
   }
 
   renderRow(movie, sectionId, rowId) {
-
     return (
       <View style={styles.container}>
         <TouchableOpacity activeOpacity={0.7} onPress={() => {
@@ -109,7 +106,6 @@ export default class App extends React.Component {
           </TouchableOpacity>
 
         </View>
-
 
       </View>)
   }
@@ -199,14 +195,15 @@ class ModalView extends React.Component {
 
             <TouchableOpacity onPress={() => { this.props.linkPressed("http://www.imdb.com/title/" + this.props.imdbId) }} >
               <Image source={{ uri: "http://ia.media-imdb.com/images/M/MV5BMTk3ODA4Mjc0NF5BMl5BcG5nXkFtZTgwNDc1MzQ2OTE@._V1_.png" }}
-                style={{ width: 80, height: 40, marginTop: 20 }} />
+                style={{ width: 80, height: 40, marginTop: 10 }} />
             </TouchableOpacity>
-
+            <View style={{backgroundColor:"#ddd9d9", height: 60, width: 400, marginTop: 40, alignItems: "center"}} >
             <TouchableOpacity activeOpacity={0.3} onPress={() => {
               this.props.setModalVisible(!this.props.modalVisible)
             }}>
-              <Image source={{ uri: "https://cdn3.iconfinder.com/data/icons/minimal-1/110/Button-14-512.png" }} style={{ width: 50, height: 50, marginTop: 20 }} />
+              <Image source={{ uri: "http://dkcoin8.com/images/clip-art-x-14.png" }} style={{ width: 25, height: 25, marginTop: 10 }} />
             </TouchableOpacity>
+            </View>
 
           </View>
         </View>
@@ -234,13 +231,15 @@ class Header extends React.Component {
         arr.push(data[movie])
       })
 
-      arr.sort(function (a, b) { return (a.popularity < b.popularity) ? 1 : ((b.popularity < a.popularity) ? -1 : 0); });
+      arr.sort(function(a,b) {
+        return b.popularity - a.popularity
+      } );
       this.props.reRender(arr)
     }
   }
   render() {
     return (<View style={styles.header}>
-      <Text> Sort by rating: </Text>
+      <Text style={{fontSize: 16}}> Sort by rating: </Text>
       <Switch style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }], marginTop: 15 }} value={this.state.switchValue} onValueChange={this.toggleSwitch} />
     </View>)
   }
