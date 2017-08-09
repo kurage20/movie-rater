@@ -1,7 +1,8 @@
 import React from 'react';
 import {
   StyleSheet, Text, View, ListView, TouchableOpacity, Image, ActivityIndicator,
-  Modal, TouchableHighlight, Linking, Switch } from 'react-native';
+  Modal, TouchableHighlight, Linking, Switch, WebView
+} from 'react-native';
 
 export default class App extends React.Component {
   constructor() {
@@ -9,11 +10,12 @@ export default class App extends React.Component {
     this.state = {
       isLoading: true,
       modalVisible: false,
-
+      webViewVisible: false,
     }
     this.reRender = this.reRender.bind(this)
     this.rateMovie = this.rateMovie.bind(this)
     this.setModalVisible = this.setModalVisible.bind(this)
+    this._linkPressed = this._linkPressed.bind(this)
   }
 
   componentDidMount() {
@@ -26,7 +28,6 @@ export default class App extends React.Component {
           data: responseJson.data,
           dataSource: ds.cloneWithRows(responseJson.data),
         })
-
         this.addVoteProperty()
       })
       .catch((error) => {
@@ -50,14 +51,14 @@ export default class App extends React.Component {
 
     Object.keys(data).forEach(function (key) {
       if (key === id) {
-        if( (data[key].popularity >= 0 && upvote) || (data[key].popularity > 0 && !upvote) )
-        upvote ? data[key].popularity++ : data[key].popularity--
+        if ((data[key].popularity >= 0 && upvote) || (data[key].popularity > 0 && !upvote))
+          upvote ? data[key].popularity++ : data[key].popularity--
       }
     })
 
     if (modal) {
-      if( (this.state.popularity >= 0 && upvote) || (this.state.popularity > 0 && !upvote) ) {
-      upvote ? this.setState({ popularity: ++this.state.popularity }) : this.setState({ popularity: --this.state.popularity })
+      if ((this.state.popularity >= 0 && upvote) || (this.state.popularity > 0 && !upvote)) {
+        upvote ? this.setState({ popularity: ++this.state.popularity }) : this.setState({ popularity: --this.state.popularity })
       }
     }
 
@@ -79,11 +80,9 @@ export default class App extends React.Component {
   renderRow(movie, sectionId, rowId) {
     return (
       <View style={styles.container}>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => {
-          this._sendData(movie, rowId)
-        }}>
-          <Image source={{ uri: movie.cover }} style={styles.image} />
 
+        <TouchableOpacity activeOpacity={0.7} onPress={() => { this._sendData(movie, rowId) }}>
+          <Image source={{ uri: movie.cover }} style={styles.image} />
         </TouchableOpacity>
         <Text style={styles.title}>{movie.title} ({movie.releaseYear})</Text>
 
@@ -122,8 +121,8 @@ export default class App extends React.Component {
     })
     this.setModalVisible(true)
   }
-  _linkPressed(url) {
-    Linking.openURL(url)
+  _linkPressed(visible) {
+    this.setState({ webViewVisible: visible })
   }
 
   render() {
@@ -136,16 +135,27 @@ export default class App extends React.Component {
     }
     return (
       <View style={{ flex: 1, marginTop: Expo.Constants.statusBarHeight }}>
-        <ModalView data={this.state.data} setModalVisible={this.setModalVisible} modalVisible={this.state.modalVisible} rateMovie={this.rateMovie}
-          linkPressed={this._linkPressed} title={this.state.title} year={this.state.year} day={this.state.day} month={this.state.month} img={this.state.img}
-          imdbId={this.state.imdbId} popularity={this.state.popularity} rowId={this.state.rowId} />
+        <MovieDetails
+          data={this.state.data}
+          setModalVisible={this.setModalVisible}
+          modalVisible={this.state.modalVisible}
+          rateMovie={this.rateMovie}
+          linkPressed={this._linkPressed}
+          title={this.state.title}
+          year={this.state.year}
+          day={this.state.day}
+          month={this.state.month}
+          img={this.state.img}
+          imdbId={this.state.imdbId}
+          popularity={this.state.popularity}
+          rowId={this.state.rowId} />
         <ListView
           dataSource={this.state.dataSource}
           renderRow={this.renderRow.bind(this)}
           renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}
           renderHeader={() => <Header data={this.state.data} dataSource={this.state.dataSource} reRender={this.reRender} />}
         />
-
+        <ImdbLink linkPressed={this._linkPressed} imdbId={this.state.imdbId} webViewVisible={this.state.webViewVisible} />
       </View>
 
     )
@@ -153,11 +163,7 @@ export default class App extends React.Component {
 
 }
 
-class ModalView extends React.Component {
-  constructor(props) {
-    super(props)
-  }
-
+class MovieDetails extends React.Component {
   render() {
     return (
       <Modal
@@ -193,16 +199,16 @@ class ModalView extends React.Component {
 
             </View>
 
-            <TouchableOpacity onPress={() => { this.props.linkPressed("http://www.imdb.com/title/" + this.props.imdbId) }} >
+            <TouchableOpacity onPress={() => { this.props.linkPressed(true) }} >
               <Image source={{ uri: "http://ia.media-imdb.com/images/M/MV5BMTk3ODA4Mjc0NF5BMl5BcG5nXkFtZTgwNDc1MzQ2OTE@._V1_.png" }}
                 style={{ width: 80, height: 40, marginTop: 10 }} />
             </TouchableOpacity>
-            <View style={{backgroundColor:"#ddd9d9", height: 60, width: 400, marginTop: 40, alignItems: "center"}} >
-            <TouchableOpacity activeOpacity={0.3} onPress={() => {
-              this.props.setModalVisible(!this.props.modalVisible)
-            }}>
-              <Image source={{ uri: "http://dkcoin8.com/images/clip-art-x-14.png" }} style={{ width: 25, height: 25, marginTop: 10 }} />
-            </TouchableOpacity>
+            <View style={{ backgroundColor: "#ddd9d9", height: 60, width: 400, marginTop: 40, alignItems: "center" }} >
+              <TouchableOpacity activeOpacity={0.3} onPress={() => {
+                this.props.setModalVisible(!this.props.modalVisible)
+              }}>
+                <Image source={{ uri: "http://dkcoin8.com/images/clip-art-x-14.png" }} style={{ width: 25, height: 25, marginTop: 10 }} />
+              </TouchableOpacity>
             </View>
 
           </View>
@@ -213,8 +219,8 @@ class ModalView extends React.Component {
 }
 
 class Header extends React.Component {
-  constructor(props) {
-    super(props)
+  constructor() {
+    super()
     this.state = {
       switchValue: false
     }
@@ -224,24 +230,45 @@ class Header extends React.Component {
   toggleSwitch(value) {
     this.setState({ switchValue: value })
     let data = this.props.data
-    let arr = []
+    let newData = []
 
     if (!this.state.switchValue) {
       Object.keys(data).forEach(function (movie) {
-        arr.push(data[movie])
+        newData.push(data[movie])
       })
 
-      arr.sort(function(a,b) {
+      newData.sort(function (a, b) {
         return b.popularity - a.popularity
-      } );
-      this.props.reRender(arr)
+      });
+      this.props.reRender(newData)
     }
   }
   render() {
     return (<View style={styles.header}>
-      <Text style={{fontSize: 16}}> Sort by rating: </Text>
+      <Text style={{ fontSize: 16 }}> Sort by rating: </Text>
       <Switch style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }], marginTop: 15 }} value={this.state.switchValue} onValueChange={this.toggleSwitch} />
     </View>)
+  }
+}
+
+class ImdbLink extends React.Component {
+  render() {
+    return (
+      <Modal
+        animationType={"slide"}
+        transparent={false}
+        visible={this.props.webViewVisible}
+        onRequestClose={() => { this.props.linkPressed(false) }}>
+        <WebView
+          source={{ uri: 'https://www.imdb.com/title/' + this.props.imdbId }} />
+
+        <View style={{ backgroundColor: "#ddd9d9", height: 60, width: 400, marginTop: 40, alignItems: "center" }} >
+          <TouchableOpacity activeOpacity={0.3} onPress={() => { this.props.linkPressed(false) }}>
+            <Image source={{ uri: "http://dkcoin8.com/images/clip-art-x-14.png" }} style={{ width: 25, height: 25, marginTop: 20, marginRight: 40 }} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
+    );
   }
 }
 
