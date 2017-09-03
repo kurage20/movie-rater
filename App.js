@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   StyleSheet, Text, View, ListView, TouchableOpacity, Image, ActivityIndicator,
-  Modal, TouchableHighlight, Linking, Switch, WebView
+  Modal, TouchableHighlight, Switch, WebView
 } from 'react-native';
 
 export default class App extends React.Component {
@@ -149,12 +149,14 @@ export default class App extends React.Component {
           imdbId={this.state.imdbId}
           popularity={this.state.popularity}
           rowId={this.state.rowId} />
+        
         <ListView
           dataSource={this.state.dataSource}
           renderRow={this.renderRow.bind(this)}
           renderSeparator={(sectionId, rowId) => <View key={rowId} style={styles.separator} />}
           renderHeader={() => <Header data={this.state.data} dataSource={this.state.dataSource} reRender={this.reRender} />}
         />
+        
         <ImdbLink linkPressed={this._linkPressed} imdbId={this.state.imdbId} webViewVisible={this.state.webViewVisible} />
       </View>
 
